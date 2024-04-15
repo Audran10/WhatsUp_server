@@ -10,7 +10,7 @@ import 'dotenv/config';
       dbName: 'Whatsup_db',
     }),
     UsersModule,
-    ConversationsModule
+    ConversationsModule,
   ],
   controllers: [],
   providers: [],

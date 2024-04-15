@@ -1,6 +1,5 @@
 import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer } from '@nestjs/websockets';
 import { ConversationsService } from './conversations.service';
-import { CreateMessageDto } from './dto/create-message.dto';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
 import { Server } from 'socket.io';
@@ -10,16 +9,13 @@ export class ConversationsGateway {
   constructor(private readonly conversationsService: ConversationsService) {}
 
   @WebSocketServer()
-  server: Server;
+  socket: Server;
 
   @SubscribeMessage('createConversation')
-  create(@MessageBody() createConversationDto: CreateConversationDto) {
-    return this.conversationsService.createDiscussion(createConversationDto);
-  }
-
-  @SubscribeMessage('createMessage')
-  createMessage(@MessageBody() createMessageDto: CreateMessageDto) {
-    return this.conversationsService.createMessage(createMessageDto);
+  create(@MessageBody() data: any) {
+    console.log(data);
+    this.socket.emit('conversation/{id}', data);
+    return data;
   }
 
   @SubscribeMessage('findAllConversations')
