@@ -7,21 +7,21 @@ import { AuthGuard } from 'src/guard.service';
 export class ConversationsController {
   constructor(private readonly conversationsService: ConversationsService) {}
 
-  @UseGuards(AuthGuard)
   @Post()
+  @UseGuards(AuthGuard)
   async create(@Body() createConversationDto: CreateConversationDto) {
     return this.conversationsService.createConversation(createConversationDto);
   }
 
-  @UseGuards(AuthGuard)
   @Get()
+  @UseGuards(AuthGuard)
   async findMyConversations(@Req() req) {
     return this.conversationsService.findMyConversations(req.user.sub);
   }
 
-  @UseGuards(AuthGuard)
   @Get(':id')
-  async findOne(@Req() req) {
+  @UseGuards(AuthGuard)
+  async findOne(@Req() req){
     return this.conversationsService.findOne(req.params.id);
   }
 }

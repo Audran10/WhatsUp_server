@@ -3,6 +3,7 @@ import { ConversationsService } from './conversations.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
 import { Server } from 'socket.io';
+import { ObjectId } from 'mongodb';
 
 @WebSocketGateway()
 export class ConversationsGateway {
@@ -24,7 +25,7 @@ export class ConversationsGateway {
   }
 
   @SubscribeMessage('findOneConversation')
-  findOne(@MessageBody() id: number) {
+  findOne(@MessageBody() id: ObjectId) {
     return this.conversationsService.findOne(id);
   }
 

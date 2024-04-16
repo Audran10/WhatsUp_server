@@ -25,8 +25,8 @@ export class ConversationsService {
     return `This action returns all conversations`;
   }
 
-  findOne(id: number) {
-    return this.conversationModel.findById(id);
+  findOne(id: ObjectId) {
+    return this.conversationModel.findOne({ _id: id }).exec();
   }
 
   update(id: number, updateConversationDto: UpdateConversationDto) {
