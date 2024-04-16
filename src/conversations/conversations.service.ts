@@ -18,7 +18,9 @@ export class ConversationsService {
   }
 
   findMyConversations(userId: ObjectId) {
-    return this.conversationModel.find({ users: userId });
+    return this.conversationModel.find({ users: userId })
+    .populate('users')
+    .exec();
   }
 
   findAll() {

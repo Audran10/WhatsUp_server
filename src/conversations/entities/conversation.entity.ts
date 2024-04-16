@@ -8,6 +8,7 @@ export const ConversationSchema = new Schema({
     },
     users: {
         type: [ObjectId],
+        ref: 'User',
         required: true,
     },
     messages: [{
