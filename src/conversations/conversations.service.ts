@@ -1,11 +1,24 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { ObjectId } from 'mongodb';
+import { Conversation } from './entities/conversation.entity';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
 
 @Injectable()
 export class ConversationsService {
-  create(createConversationDto: CreateConversationDto) {
-    return 'This action adds a new conversation';
+  constructor(
+    @InjectModel('Conversation') private conversationModel: Model<Conversation>,
+  ) {}
+
+  createConversation(createConversationDto: CreateConversationDto) {
+    const newConversation = new this.conversationModel(createConversationDto);
+    return newConversation.save();
+  }
+
+  findMyConversations(userId: ObjectId) {
+    return this.conversationModel.find({ users: userId });
   }
 
   findAll() {
@@ -13,7 +26,7 @@ export class ConversationsService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} conversation`;
+    return this.conversationModel.findById(id);
   }
 
   update(id: number, updateConversationDto: UpdateConversationDto) {
