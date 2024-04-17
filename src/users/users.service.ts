@@ -18,7 +18,7 @@ export class UsersService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
+  async createUser(createUserDto: CreateUserDto) {
     const user = await this.userModel
       .findOne({ email: createUserDto.email })
       .exec();
@@ -30,10 +30,16 @@ export class UsersService {
         ...createUserDto,
         password: hashedPassword,
       }).save();
-
+      const payload = {
+        id: newUser._id,
+        pseudo: newUser.pseudo,
+      };
       return {
-        ...newUser.toJSON(),
-        password: undefined,
+        access_token: await this.jwtService.signAsync(payload),
+        user: {
+          ...newUser.toJSON(),
+          password: undefined,
+        },
       };
     }
   }
@@ -51,7 +57,7 @@ export class UsersService {
       throw new UnauthorizedException();
     }
     const payload = {
-      sub: user._id,
+      id: user._id,
       pseudo: user.pseudo,
     };
     return {

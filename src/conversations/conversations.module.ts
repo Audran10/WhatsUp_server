@@ -7,7 +7,9 @@ import { ConversationsController } from './conversations.controller';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Conversation', schema: ConversationSchema }]),
+    MongooseModule.forFeature([
+      { name: 'Conversation', schema: ConversationSchema },
+    ]),
   ],
   controllers: [ConversationsController],
   providers: [ConversationsGateway, ConversationsService],
