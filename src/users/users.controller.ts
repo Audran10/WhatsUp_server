@@ -5,19 +5,16 @@ import { LoginUserDto as LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from 'src/guard.service';
 
 @Controller('users')
-// @ApiTags('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get(':id')
-//   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Get('/')
-//   @ApiBearerAuth()
   @UseGuards(AuthGuard)
   findAll() {
     return this.usersService.findAll();
