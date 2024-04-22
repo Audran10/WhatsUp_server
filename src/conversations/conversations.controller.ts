@@ -26,9 +26,9 @@ export class ConversationsController {
   @UseInterceptors(FileInterceptor('file'))
   async create(
     @Body() createConversationDto: CreateConversationDto,
+    @UploadedFile() file: Express.Multer.File,
     @Req() req,
   ) {
-    const file: Express.Multer.File = createConversationDto.data;
     return this.conversationsService.createConversation(
       createConversationDto,
       req.user.id,
