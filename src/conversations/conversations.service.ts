@@ -5,6 +5,7 @@ import { ObjectId, GridFSBucket, GridFSBucketWriteStream } from 'mongodb';
 import { Conversation } from './entities/conversation.entity';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { User } from 'src/users/entities/user.entity';
+import { SendMessageDto } from './dto/send-message.dto';
 
 @Injectable()
 export class ConversationsService {
@@ -19,16 +20,38 @@ export class ConversationsService {
     });
   }
 
-  async createConversation(createConversationDto: CreateConversationDto) {
+  async createConversation(
+    createConversationDto: CreateConversationDto,
+    userId: string,
+    file?: Express.Multer.File,
+  ) {
+    const user = (await this.connection
+      .model('User')
+      .findOne({ _id: userId })
+      .exec()) as unknown as User;
+    createConversationDto.users.push(user.phone);
+    const users = (await this.connection
+      .model('User')
+      .find({ phone: createConversationDto.users })
+      .exec()) as unknown as User[];
     if (createConversationDto.name === undefined) {
-      const users = (await this.connection
-        .model('User')
-        .find({ _id: createConversationDto.users })
-        .exec()) as unknown as User[];
       createConversationDto.name = users.map((user) => user.pseudo).join(', ');
     }
-    const newConversation = new this.conversationModel(createConversationDto);
-    return newConversation.save();
+    const conversation = {
+      name: createConversationDto.name,
+      users: users.map((user) => user._id),
+    } as { name: string; users: ObjectId[] };
+
+    const newConversation = await new this.conversationModel(
+      conversation,
+    ).save();
+    if (file) {
+      const picture = await this.saveFileToGridFS(file);
+      newConversation.picture = picture;
+      newConversation.picture_url = `http://localhost:3000/conversations/${newConversation._id}/picture`;
+      return newConversation.save();
+    }
+    return newConversation;
   }
 
   async saveFileToGridFS(file: Express.Multer.File): Promise<ObjectId> {
@@ -63,7 +86,7 @@ export class ConversationsService {
       return {
         _id: conversation._id,
         name: conversation.name,
-        group_picture: conversation.picture_url,
+        picture_url: conversation.picture_url,
         users: conversation.users.map((user) => {
           return {
             ...user.toJSON(),
@@ -88,7 +111,7 @@ export class ConversationsService {
       .findOne({ _id: conversationId })
       .exec();
     conversation.picture = file;
-    conversation.picture_url = `http://localhost:3000/conversations/${conversationId}/picture`;
+    conversation.picture_url = `http://localhost:3000/conversations/${conversation._id}/picture`;
     return conversation.save();
   }
 
@@ -118,17 +141,18 @@ export class ConversationsService {
     return this.conversationModel.deleteOne({ _id: id }).exec();
   }
 
-  async sendMessage(
-    conversationId: ObjectId,
-    senderId: ObjectId,
-    content: string,
-  ) {
+  async sendMessage(data: SendMessageDto) {
+    console.log(data.conversation_id);
     const conversation = await this.conversationModel
-      .findOne({ _id: conversationId })
+      .findOne({ _id: data.conversation_id })
+      .populate('users')
       .exec();
+    console.log(conversation);
+    conversation.updated_at = new Date();
     conversation.messages.push({
-      sender_id: senderId,
-      content,
+      _id: new ObjectId(),
+      sender_id: data.sender_id,
+      content: data.content,
       created_at: new Date(),
     });
     return conversation.save();

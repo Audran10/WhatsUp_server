@@ -15,15 +15,25 @@ import { CreateConversationDto } from './dto/create-conversation.dto';
 import { AuthGuard } from 'src/guard.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+import { SendMessageDto } from './dto/send-message.dto';
 
 @Controller('conversations')
 export class ConversationsController {
   constructor(private readonly conversationsService: ConversationsService) {}
 
-  @Post()
+  @Post('create')
   @UseGuards(AuthGuard)
-  async create(@Body() createConversationDto: CreateConversationDto) {
-    return this.conversationsService.createConversation(createConversationDto);
+  @UseInterceptors(FileInterceptor('file'))
+  async create(
+    @Body() createConversationDto: CreateConversationDto,
+    @Req() req,
+  ) {
+    const file: Express.Multer.File = createConversationDto.data;
+    return this.conversationsService.createConversation(
+      createConversationDto,
+      req.user.id,
+      file,
+    );
   }
 
   @Get()
@@ -58,11 +68,12 @@ export class ConversationsController {
   @Post(':id/sendMessage')
   @UseGuards(AuthGuard)
   async sendMessage(@Req() req, @Body() message: { content: string }) {
-    return this.conversationsService.sendMessage(
-      req.params.id,
-      req.user.id,
-      message.content,
-    );
+    const sendMessageDto: SendMessageDto = {
+      conversation_id: req.params.id,
+      content: message.content,
+      sender_id: req.user.id,
+    };
+    return this.conversationsService.sendMessage(sendMessageDto);
   }
 
   @Delete(':id')

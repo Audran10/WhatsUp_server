@@ -16,12 +16,16 @@ export const ConversationSchema = new Schema({
     type: ObjectId,
     required: false,
   },
-  pictureURL: {
-    type: ObjectId,
+  picture_url: {
+    type: String,
     required: false,
   },
   messages: [
     {
+      _id: {
+        type: ObjectId,
+        required: true,
+      },
       sender_id: {
         type: ObjectId,
         required: true,
@@ -53,6 +57,7 @@ export interface Conversation extends Document {
   picture?: ObjectId;
   picture_url?: string;
   messages?: {
+    _id: ObjectId;
     sender_id: ObjectId;
     content: string;
     created_at: Date;

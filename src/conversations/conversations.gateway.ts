@@ -1,9 +1,15 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  WebSocketServer,
+  ConnectedSocket,
+} from '@nestjs/websockets';
 import { ConversationsService } from './conversations.service';
-import { CreateConversationDto } from './dto/create-conversation.dto';
-import { UpdateConversationDto } from './dto/update-conversation.dto';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { ObjectId } from 'mongodb';
+import { SendMessageDto } from './dto/send-message.dto';
+import { Conversation } from './entities/conversation.entity';
 
 @WebSocketGateway()
 export class ConversationsGateway {
@@ -12,11 +18,41 @@ export class ConversationsGateway {
   @WebSocketServer()
   socket: Server;
 
-  @SubscribeMessage('createConversation')
-  create(@MessageBody() data: any) {
-    console.log(data);
-    this.socket.emit('conversation/{id}', data);
-    return data;
+  @SubscribeMessage('joinNotification')
+  joinNotification(
+    @MessageBody() user_id: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.join(`notification/${user_id}`);
+  }
+
+  @SubscribeMessage('joinConversation')
+  joinConversation(
+    @MessageBody() id: string,
+    @ConnectedSocket() client: Socket,
+  ) {
+    client.join(`conversation/${id}`);
+  }
+
+  @SubscribeMessage('send_message')
+  async sendMessage(@MessageBody() data: string) {
+    const sendMessageDto: SendMessageDto = JSON.parse(data);
+    const conversation =
+      await this.conversationsService.sendMessage(sendMessageDto);
+    const message = conversation.messages.slice(-1)[0];
+    this.socket.to(sendMessageDto.conversation_id).emit('new_message', message);
+    conversation.users.forEach((user) => {
+      const conv = {
+        _id: conversation._id,
+        name: conversation.name,
+        picture_url: conversation.picture_url,
+        users: conversation.users,
+        last_message: message,
+        created_at: message.created_at,
+        sender_id: message.sender_id,
+      };
+      this.socket.to(`notification/${user}`).emit('new_message', conv);
+    });
   }
 
   @SubscribeMessage('findAllConversations')
@@ -30,12 +66,12 @@ export class ConversationsGateway {
   }
 
   @SubscribeMessage('updateConversation')
-  update(@MessageBody() updateConversationDto: UpdateConversationDto) {
-    return this.conversationsService.update(updateConversationDto.id, updateConversationDto);
+  update() {
+    // return this.conversationsService.update(updateConversationDto.id, updateConversationDto);
   }
 
   @SubscribeMessage('removeConversation')
-  remove(@MessageBody() id: number) {
+  remove(@MessageBody() id: ObjectId) {
     return this.conversationsService.remove(id);
   }
 }
