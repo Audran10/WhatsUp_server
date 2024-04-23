@@ -1,6 +1,10 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, WebSocketServer } from '@nestjs/websockets';
+import {
+  WebSocketGateway,
+  SubscribeMessage,
+  MessageBody,
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { ConversationsService } from './conversations.service';
-import { CreateConversationDto } from './dto/create-conversation.dto';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
 import { Server } from 'socket.io';
 import { ObjectId } from 'mongodb';
@@ -31,11 +35,11 @@ export class ConversationsGateway {
 
   @SubscribeMessage('updateConversation')
   update(@MessageBody() updateConversationDto: UpdateConversationDto) {
-    return this.conversationsService.update(updateConversationDto.id, updateConversationDto);
+    return this.conversationsService.update(updateConversationDto.id);
   }
 
   @SubscribeMessage('removeConversation')
-  remove(@MessageBody() id: number) {
+  remove(@MessageBody() id: ObjectId) {
     return this.conversationsService.remove(id);
   }
 }
