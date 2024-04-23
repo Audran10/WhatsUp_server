@@ -80,4 +80,32 @@ export class UsersService {
   async findOne(id: string): Promise<User> {
     return this.userModel.findOne({ _id: id }).exec();
   }
+
+  async findOneAndBan(id: string): Promise<User> {
+    const user = await this.userModel
+      .findOneAndUpdate(
+        { _id: id },
+        { $set: { role: 'banned' } },
+        { new: true },
+      )
+      .exec();
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
+  }
+
+  async findOneAndUnban(id: string): Promise<User> {
+    const user = await this.userModel
+      .findOneAndUpdate({ _id: id }, { $set: { role: 'user' } }, { new: true })
+      .exec();
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
+  }
 }
