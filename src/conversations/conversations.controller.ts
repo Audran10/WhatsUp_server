@@ -52,12 +52,12 @@ export class ConversationsController {
     return this.conversationsService.modifyPicture(req.params.id, file);
   }
 
-  @Get(':id/picture')
-  async streamMusic(@Res() res: Response, @Req() req) {
-    const stream = await this.conversationsService.getPicture(req.params.id);
-    res.set('Content-Type', 'image/jpeg');
-    stream.pipe(res);
-  }
+  // @Get(':id/picture')
+  // async streamMusic(@Res() res: Response, @Req() req) {
+  //   const stream = await this.conversationsService.getPicture(req.params.id);
+  //   res.set('Content-Type', 'image/jpeg');
+  //   stream.pipe(res);
+  // }
 
   @Get(':id')
   @UseGuards(AuthGuard)

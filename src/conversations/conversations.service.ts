@@ -115,21 +115,42 @@ export class ConversationsService {
     return conversation.save();
   }
 
-  async getPicture(conversationId: ObjectId) {
-    const conversation = await this.findOne(conversationId);
-    if (!conversation) {
-      console.log('Picture not found');
-      throw new NotFoundException('Picture not found');
-    }
-    return this.gridFsBucket.openDownloadStream(conversation.picture);
-  }
+  // async getPicture(conversationId: ObjectId) {
+  //   const conversation = await this.findOne(conversationId);
+  //   if (!conversation) {
+  //     console.log('Picture not found');
+  //     throw new NotFoundException('Picture not found');
+  //   }
+  //   return this.gridFsBucket.openDownloadStream(conversation.picture);
+  // }
 
   findAll() {
     return `This action returns all conversations`;
   }
 
   findOne(id: ObjectId) {
-    return this.conversationModel.findOne({ _id: id }).exec();
+    const conversation = this.conversationModel
+    .findOne({ _id: id })
+    .populate('users')
+    .exec();
+
+    return conversation.then((conversation) => {
+      return {
+        _id: conversation._id,
+        name: conversation.name,
+        picture_url: conversation.picture_url,
+        users: conversation.users.map((user) => {
+          return {
+            ...user.toJSON(),
+            password: undefined,
+            role: undefined,
+          };
+        }),
+        messages: conversation.messages,
+        created_at: conversation.created_at,
+        updated_at: conversation.updated_at,
+      };
+    });
   }
 
   update(id: number) {
@@ -142,12 +163,10 @@ export class ConversationsService {
   }
 
   async sendMessage(data: SendMessageDto) {
-    console.log(data.conversation_id);
     const conversation = await this.conversationModel
       .findOne({ _id: data.conversation_id })
       .populate('users')
       .exec();
-    console.log(conversation);
     conversation.updated_at = new Date();
     conversation.messages.push({
       _id: new ObjectId(),
@@ -155,6 +174,7 @@ export class ConversationsService {
       content: data.content,
       created_at: new Date(),
     });
+    console.log(conversation);
     return conversation.save();
   }
 }

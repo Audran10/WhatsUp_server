@@ -11,7 +11,7 @@ import { ObjectId } from 'mongodb';
 import { SendMessageDto } from './dto/send-message.dto';
 import { Conversation } from './entities/conversation.entity';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class ConversationsGateway {
   constructor(private readonly conversationsService: ConversationsService) {}
 
@@ -40,7 +40,7 @@ export class ConversationsGateway {
     const conversation =
       await this.conversationsService.sendMessage(sendMessageDto);
     const message = conversation.messages.slice(-1)[0];
-    this.socket.to(sendMessageDto.conversation_id).emit('new_message', message);
+    this.socket.to(`conversation/${sendMessageDto.conversation_id}`).emit('new_message', JSON.stringify(message));
     conversation.users.forEach((user) => {
       const conv = {
         _id: conversation._id,
