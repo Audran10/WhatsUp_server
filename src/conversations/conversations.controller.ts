@@ -9,6 +9,7 @@ import {
   UploadedFile,
   Res,
   Delete,
+  Param,
 } from '@nestjs/common';
 import { ConversationsService } from './conversations.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
@@ -69,5 +70,16 @@ export class ConversationsController {
   @UseGuards(AuthGuard)
   async remove(@Req() req) {
     return this.conversationsService.remove(req.params.id);
+  }
+
+  @Delete(':conversationId/message/:messageId')
+  async deleteMessage(
+    @Param('conversationId') conversationId: string,
+    @Param('messageId') messageId: string,
+  ) {
+    return this.conversationsService.deleteMessageFromConversation(
+      conversationId,
+      messageId,
+    );
   }
 }

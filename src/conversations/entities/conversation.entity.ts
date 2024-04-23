@@ -53,6 +53,7 @@ export interface Conversation extends Document {
   picture?: ObjectId;
   picture_url?: string;
   messages?: {
+    _id: ObjectId;
     sender_id: ObjectId;
     content: string;
     created_at: Date;

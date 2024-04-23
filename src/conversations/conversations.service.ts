@@ -127,10 +127,35 @@ export class ConversationsService {
       .findOne({ _id: conversationId })
       .exec();
     conversation.messages.push({
+      _id: new ObjectId(),
       sender_id: senderId,
       content,
       created_at: new Date(),
     });
     return conversation.save();
+  }
+
+  async deleteMessageFromConversation(
+    conversationId: string,
+    messageId: string,
+  ): Promise<Conversation | null> {
+    try {
+      const updatedConversation = await this.conversationModel
+        .findOneAndUpdate(
+          { _id: conversationId },
+          { $pull: { messages: { _id: messageId } } },
+          { new: true },
+        )
+        .exec();
+
+      if (!updatedConversation) {
+        throw new Error(`Conversation with ID ${conversationId} not found`);
+      }
+
+      return updatedConversation;
+    } catch (error) {
+      console.error('Error deleting message from conversation:', error);
+      throw error;
+    }
   }
 }
