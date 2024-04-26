@@ -5,8 +5,11 @@ import {
   WebSocketServer,
   ConnectedSocket,
 } from '@nestjs/websockets';
+
 import { ConversationsService } from './conversations.service';
+import { UpdateConversationDto } from './dto/update-conversation.dto';
 import { Server, Socket } from 'socket.io';
+
 import { ObjectId } from 'mongodb';
 import { SendMessageDto } from './dto/send-message.dto';
 import { Conversation } from './entities/conversation.entity';
@@ -66,8 +69,8 @@ export class ConversationsGateway {
   }
 
   @SubscribeMessage('updateConversation')
-  update() {
-    // return this.conversationsService.update(updateConversationDto.id, updateConversationDto);
+  update(@MessageBody() updateConversationDto: UpdateConversationDto) {
+    return this.conversationsService.update(updateConversationDto.id);
   }
 
   @SubscribeMessage('removeConversation')

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto as CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto as LoginUserDto } from './dto/login-user.dto';
@@ -28,5 +36,17 @@ export class UsersController {
   @Post('login/')
   login(@Body() loginDto: LoginUserDto) {
     return this.usersService.login(loginDto);
+  }
+
+  @Put('ban/:id')
+  @UseGuards(AuthGuard)
+  banUser(@Param('id') id: string) {
+    return this.usersService.findOneAndBan(id);
+  }
+
+  @Put('unban/:id')
+  @UseGuards(AuthGuard)
+  unbanUser(@Param('id') id: string) {
+    return this.usersService.findOneAndUnban(id);
   }
 }
