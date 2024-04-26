@@ -115,14 +115,14 @@ export class ConversationsService {
     return conversation.save();
   }
 
-  // async getPicture(conversationId: ObjectId) {
-  //   const conversation = await this.findOne(conversationId);
-  //   if (!conversation) {
-  //     console.log('Picture not found');
-  //     throw new NotFoundException('Picture not found');
-  //   }
-  //   return this.gridFsBucket.openDownloadStream(conversation.picture);
-  // }
+  async getPicture(conversationId: ObjectId) {
+    const conversation = await this.findOne(conversationId);
+    if (!conversation) {
+      console.log('Picture not found');
+      throw new NotFoundException('Picture not found');
+    }
+    return this.gridFsBucket.openDownloadStream(conversation.picture);
+  }
 
   findAll() {
     return `This action returns all conversations`;
@@ -138,6 +138,7 @@ export class ConversationsService {
       return {
         _id: conversation._id,
         name: conversation.name,
+        picture: conversation.picture,
         picture_url: conversation.picture_url,
         users: conversation.users.map((user) => {
           return {
