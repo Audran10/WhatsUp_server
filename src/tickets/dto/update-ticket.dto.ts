@@ -7,6 +7,6 @@ export class UpdateTicketDto extends PartialType(CreateTicketDto) {
   content: string;
   message_id: ObjectId;
   conversation_id: ObjectId;
-  sender_uername: string;
+  sender_username: string;
   sender_id: ObjectId;
 }
