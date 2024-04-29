@@ -61,10 +61,10 @@ export class UsersService {
 
   async createUser(createUserDto: CreateUserDto) {
     const user = await this.userModel
-      .findOne({ email: createUserDto.email })
+      .findOne({ phone: createUserDto.phone })
       .exec();
     if (user) {
-      throw new BadRequestException('Email already exists');
+      throw new BadRequestException('User already exists');
     } else {
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
       const newUser = await new this.userModel({

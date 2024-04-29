@@ -1,0 +1,103 @@
+[
+  {
+    "name": "Ynov Campus",
+    "users": [
+      "61f877f787b8a9b3a5f9c2cb",
+      "61f877f787b8a9b3a5f9c2cc",
+      "61f877f787b8a9b3a5f9c2cd"
+    ],
+    "messages": [
+      {
+        "_id": "61f877f787b8a9b3a5f9aaaa",
+        "sender_id": "61f877f787b8a9b3a5f9c2cb",
+        "content": "Salut les gars !",
+        "created_at": "2024-01-01T00:00:00.000Z"
+      },
+      {
+        "_id": "61f877f787b8a9b3a5f9aaab",
+        "sender_id": "61f877f787b8a9b3a5f9c2cc",
+        "content": "Salut Audran ! Comment tu vas en ce moment ?",
+        "created_at": "2024-01-01T00:00:00.000Z"
+      },
+      {
+        "_id": "61f877f787b8a9b3a5f9aaac",
+        "sender_id": "61f877f787b8a9b3a5f9c2cd",
+        "content": "Yo tous les deux ! Vouas allez bien ?",
+        "created_at": "2024-01-02T00:00:00.000Z"
+      }
+    ],
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "name": "Projet de groupe à 2",
+    "users": ["61f877f787b8a9b3a5f9c2cb", "61f877f787b8a9b3a5f9c2cc"],
+    "messages": [
+      {
+        "_id": "61f877f787b8a9b3a5f9aaad",
+        "sender_id": "61f877f787b8a9b3a5f9c2cc",
+        "content": "Salut mec !",
+        "created_at": "2024-01-01T00:00:00.000Z"
+      },
+      {
+        "_id": "61f877f787b8a9b3a5f9aaae",
+        "sender_id": "61f877f787b8a9b3a5f9c2cb",
+        "content": "Salut Paul ! Comment tu vas en ce moment ?",
+        "created_at": "2024-01-01T00:00:00.000Z"
+      }
+    ],
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "name": "Projet de groupe à 2",
+    "users": ["61f877f787b8a9b3a5f9c2cc", "61f877f787b8a9b3a5f9c2cd"],
+    "messages": [
+      {
+        "_id": "61f877f787b8a9b3a5f9aaaf",
+        "sender_id": "61f877f787b8a9b3a5f9c2cc",
+        "content": "Salut mec !",
+        "created_at": "2024-01-01T00:00:00.000Z"
+      },
+      {
+        "_id": "61f877f787b8a9b3a5f9aab0",
+        "sender_id": "61f877f787b8a9b3a5f9c2cd",
+        "content": "Salut Paul ! Comment tu vas en ce moment ?",
+        "created_at": "2024-01-01T00:00:00.000Z"
+      }
+    ],
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "name": "Projet de groupe à 2",
+    "users": ["61f877f787b8a9b3a5f9c2cb", "61f877f787b8a9b3a5f9c2cd"],
+    "messages": [
+      {
+        "_id": "61f877f787b8a9b3a5f9aab1",
+        "sender_id": "61f877f787b8a9b3a5f9c2cd",
+        "content": "Salut mec !",
+        "created_at": "2024-01-01T00:00:00.000Z"
+      },
+      {
+        "_id": "61f877f787b8a9b3a5f9aab2",
+        "sender_id": "61f877f787b8a9b3a5f9c2cb",
+        "content": "Salut Victor ! Comment tu vas en ce moment ?",
+        "created_at": "2024-01-01T00:00:00.000Z"
+      }
+    ],
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "name": "Master 2 Informatique",
+    "users": [
+      "61f877f787b8a9b3a5f9c2cb",
+      "61f877f787b8a9b3a5f9c2cc",
+      "61f877f787b8a9b3a5f9c2cd"
+    ],
+    "messages": [],
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "_id": "ObjectId(61f877f787b8a9b3a5f9c2ca)",
+    "pseudo": "Admin",
+    "email": "admin@gmail.com",
+    "phone": "0611111111",
+    "password": "admin",
+    "role": "admin"
+  },
+  {
+    "_id": "ObjectId(61f877f787b8a9b3a5f9c2cb)",
+    "pseudo": "Audran",
+    "email": "audran@gmail.com",
+    "phone": "0622222222",
+    "password": "audran",
+    "role": "user"
+  },
+  {
+    "_id": "ObjectId(61f877f787b8a9b3a5f9c2cc)",
+    "pseudo": "Paul",
+    "email": "paul@gmail.com",
+    "phone": "0633333333",
+    "password": "paul",
+    "role": "user"
+  },
+  {
+    "_id": "ObjectId(61f877f787b8a9b3a5f9c2cd)",
+    "pseudo": "Victor",
+    "email": "victor@gmail.com",
+    "phone": "0644444444",
+    "password": "victor",
+    "role": "user"
+  }
+]
