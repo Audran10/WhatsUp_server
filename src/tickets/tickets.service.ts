@@ -1,70 +1,87 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTicketDto } from './dto/create-ticket.dto';
-// import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { Model } from 'mongoose';
+import { Model, ObjectId } from 'mongoose';
 import { Ticket } from './entities/ticket.entity';
 import { Conversation } from 'src/conversations/entities/conversation.entity';
-
+import { User } from 'src/users/entities/user.entity';
 @Injectable()
 export class TicketsService {
   constructor(
-    @InjectModel('Ticket') private readonly ticketModel: Model<Ticket>,
+    @InjectModel('Ticket') private readonly TicketModel: Model<Ticket>,
     @InjectModel('Conversation')
-    private readonly conversationModel: Model<Conversation>,
+    private readonly ConversationModel: Model<Conversation>,
+    @InjectModel('User') private readonly UserModel: Model<User>,
 
     private readonly jwtService: JwtService,
   ) {}
 
+  async findConversationFromMessageId(
+    messageId: ObjectId,
+  ): Promise<Conversation | null> {
+    const conversation = await this.ConversationModel.findOne({
+      messages: { $elemMatch: { _id: messageId } },
+    }).exec();
+    return conversation;
+  }
+
   async create(createTicketDto: CreateTicketDto): Promise<Ticket> {
-    try {
-      const ticket = await this.ticketModel.create(createTicketDto);
-      return ticket;
-    } catch (error) {
-      console.error('Error creating ticket:', error);
-      throw new Error('Unable to create ticket');
+    const user = await this.UserModel.findOne({
+      _id: createTicketDto.reporter,
+    }).exec();
+
+    if (!user) {
+      throw new Error(`User with ID ${createTicketDto.reporter} not found`);
     }
+
+    const conversation = await this.findConversationFromMessageId(
+      createTicketDto.message_id,
+    );
+
+    if (!conversation) {
+      throw new Error(
+        `Conversation not found for message ID ${createTicketDto.message_id}`,
+      );
+    }
+
+    createTicketDto.reporter = user.pseudo;
+    createTicketDto.conversation_id = conversation._id;
+
+    const ticket = await this.TicketModel.create(createTicketDto);
+    return ticket;
   }
 
   async findAll(): Promise<Ticket[]> {
-    return this.ticketModel.find().exec();
+    return this.TicketModel.find().exec();
   }
 
   async findOne(id: string): Promise<Ticket> {
-    return this.ticketModel.findOne({ _id: id }).exec();
+    return this.TicketModel.findOne({ _id: id }).exec();
   }
 
-  async deleteTicketAndMessage(
-    ticketId: string,
-    conversationId: string,
-    messageId: string,
-  ): Promise<{ ticket: Ticket | null; messageDeleted: boolean }> {
+  async deleteTicketAndMessage(ticketId: string): Promise<Ticket | null> {
     try {
-      const ticket = await this.ticketModel
-        .findOneAndDelete({ _id: ticketId })
-        .exec();
+      const ticket = await this.TicketModel.findOneAndDelete({
+        _id: ticketId,
+      }).exec();
       if (!ticket) {
         throw new Error(`Ticket with ID ${ticketId} not found`);
       }
 
-      const updatedConversation = await this.conversationModel
-        .findOneAndUpdate(
-          { _id: conversationId },
-          { $pull: { messages: { _id: messageId } } },
-          { new: true },
-        )
-        .exec();
+      const updatedConversation = await this.ConversationModel.findOneAndUpdate(
+        { _id: ticket?.conversation_id },
+        { $pull: { messages: { _id: ticket.message_id } } },
+        { new: true },
+      ).exec();
 
       if (!updatedConversation) {
-        throw new Error(`Conversation with ID ${conversationId} not found`);
+        throw new Error(
+          `Conversation with ID ${ticket.conversation_id} not found`,
+        );
       }
 
-      const messageDeleted = updatedConversation.messages.every(
-        (msg) => msg._id.toString() !== messageId,
-      );
-
-      return { ticket, messageDeleted };
+      return ticket;
     } catch (error) {
       console.error('Error deleting ticket and message:', error);
       throw error;
@@ -73,9 +90,9 @@ export class TicketsService {
 
   async deleteTicket(id: string): Promise<Ticket | null> {
     try {
-      const ticket = await this.ticketModel
-        .findOneAndDelete({ _id: id })
-        .exec();
+      const ticket = await this.TicketModel.findOneAndDelete({
+        _id: id,
+      }).exec();
       if (!ticket) {
         throw new Error(`Ticket with ID ${id} not found`);
       }
