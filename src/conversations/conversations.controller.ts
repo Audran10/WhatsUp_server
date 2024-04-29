@@ -9,6 +9,7 @@ import {
   UploadedFile,
   Res,
   Delete,
+  Patch,
   Param,
 } from '@nestjs/common';
 import { ConversationsService } from './conversations.service';
@@ -75,6 +76,12 @@ export class ConversationsController {
       sender_id: req.user.id,
     };
     return this.conversationsService.sendMessage(sendMessageDto);
+  }
+
+  @Patch(':id/leave')
+  @UseGuards(AuthGuard)
+  async leaveConversation(@Req() req) {
+    return this.conversationsService.leaveConversation(req.params.id, req.user.id);
   }
 
   @Delete(':id')
