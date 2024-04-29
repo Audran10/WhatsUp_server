@@ -159,4 +159,17 @@ export class ConversationsService {
     });
     return conversation.save();
   }
+
+  async leaveConversation(conversationId: ObjectId, userId: ObjectId) {
+    const conversation = await this.conversationModel
+      .findOne({ _id: conversationId })
+      .exec();
+    conversation.users = conversation.users.filter((user) => user._id === userId);
+
+    if (conversation.users.length === 1) {
+      return this.remove(conversationId);
+    }
+
+    return conversation.save();
+  }
 }
