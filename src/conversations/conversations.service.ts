@@ -79,7 +79,10 @@ export class ConversationsService {
   async findMyConversations(userId: ObjectId) {
     const conversations = await this.conversationModel
       .find({ users: userId })
-      .populate('users')
+      .populate({
+        path: 'users',
+        select: '-pseudo, -email, -phone, -picture_url',
+      })
       .exec();
 
     return conversations.map((conversation) => {
@@ -87,13 +90,7 @@ export class ConversationsService {
         _id: conversation._id,
         name: conversation.name,
         picture_url: conversation.picture_url,
-        users: conversation.users.map((user) => {
-          return {
-            ...user.toJSON(),
-            password: undefined,
-            role: undefined,
-          };
-        }),
+        users: conversation.users,
         last_message: conversation.messages.slice(-1)[0],
         created_at: conversation.created_at,
         updated_at: conversation.updated_at,
@@ -128,30 +125,15 @@ export class ConversationsService {
     return `This action returns all conversations`;
   }
 
-  findOne(id: ObjectId) {
-    const conversation = this.conversationModel
-    .findOne({ _id: id })
-    .populate('users')
-    .exec();
-
-    return conversation.then((conversation) => {
-      return {
-        _id: conversation._id,
-        name: conversation.name,
-        picture: conversation.picture,
-        picture_url: conversation.picture_url,
-        users: conversation.users.map((user) => {
-          return {
-            ...user.toJSON(),
-            password: undefined,
-            role: undefined,
-          };
-        }),
-        messages: conversation.messages,
-        created_at: conversation.created_at,
-        updated_at: conversation.updated_at,
-      };
-    });
+  async findOne(id: ObjectId) {
+    const conversation = await this.conversationModel
+      .findOne({ _id: id })
+      .populate({
+        path: 'users',
+        select: '-pseudo, -email, -phone, -picture_url',
+      })
+      .exec();
+    return conversation;
   }
 
   update(id: number) {
@@ -175,7 +157,6 @@ export class ConversationsService {
       content: data.content,
       created_at: new Date(),
     });
-    console.log(conversation);
     return conversation.save();
   }
 }

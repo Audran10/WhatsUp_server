@@ -12,7 +12,6 @@ import { Server, Socket } from 'socket.io';
 
 import { ObjectId } from 'mongodb';
 import { SendMessageDto } from './dto/send-message.dto';
-import { Conversation } from './entities/conversation.entity';
 
 @WebSocketGateway({ cors: true })
 export class ConversationsGateway {
@@ -43,18 +42,22 @@ export class ConversationsGateway {
     const conversation =
       await this.conversationsService.sendMessage(sendMessageDto);
     const message = conversation.messages.slice(-1)[0];
-    this.socket.to(`conversation/${sendMessageDto.conversation_id}`).emit('new_message', JSON.stringify(message));
+    this.socket
+      .to(`conversation/${sendMessageDto.conversation_id}`)
+      .emit('new_message', JSON.stringify(message));
+    const conv = {
+      _id: conversation._id,
+      name: conversation.name,
+      picture_url: conversation.picture_url,
+      users: conversation.users,
+      last_message: message,
+      created_at: message.created_at,
+      updated_at: conversation.updated_at,
+    };
     conversation.users.forEach((user) => {
-      const conv = {
-        _id: conversation._id,
-        name: conversation.name,
-        picture_url: conversation.picture_url,
-        users: conversation.users,
-        last_message: message,
-        created_at: message.created_at,
-        sender_id: message.sender_id,
-      };
-      this.socket.to(`notification/${user}`).emit('new_message', conv);
+      this.socket
+        .to(`notification/${user._id}`)
+        .emit('new_message', JSON.stringify(conv));
     });
   }
 
