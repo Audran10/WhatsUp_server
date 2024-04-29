@@ -172,4 +172,28 @@ export class ConversationsService {
 
     return conversation.save();
   }
+  
+  async deleteMessageFromConversation(
+    conversationId: string,
+    messageId: string,
+  ): Promise<Conversation | null> {
+    try {
+      const updatedConversation = await this.conversationModel
+        .findOneAndUpdate(
+          { _id: conversationId },
+          { $pull: { messages: { _id: messageId } } },
+          { new: true },
+        )
+        .exec();
+
+      if (!updatedConversation) {
+        throw new Error(`Conversation with ID ${conversationId} not found`);
+      }
+
+      return updatedConversation;
+    } catch (error) {
+      console.error('Error deleting message from conversation:', error);
+      throw error;
+    }
+  }
 }
