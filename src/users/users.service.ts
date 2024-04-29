@@ -1,22 +1,63 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { Model } from 'mongoose';
+import { Model, Connection } from 'mongoose';
+import { ObjectId, GridFSBucket, GridFSBucketWriteStream } from 'mongodb';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { User } from './entities/user.entity';
+import { UpdateUserDto } from './dto/update-user-dto';
 
 @Injectable()
 export class UsersService {
+  private gridFsBucket: GridFSBucket;
+
   constructor(
+    @InjectConnection() private readonly connection: Connection,
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly jwtService: JwtService,
-  ) {}
+  ) {
+    this.gridFsBucket = new GridFSBucket(this.connection.db, {
+      bucketName: 'User',
+    });
+  }
+
+  async saveFileToGridFS(file: Express.Multer.File): Promise<ObjectId> {
+    const fileName = file.originalname;
+    const contentType = file.mimetype;
+
+    const writeStream: GridFSBucketWriteStream =
+      this.gridFsBucket.openUploadStream(fileName, {
+        contentType,
+      });
+
+    writeStream.write(file.buffer);
+    writeStream.end();
+
+    return new Promise<ObjectId>((resolve, reject) => {
+      writeStream.on('finish', () => {
+        resolve(writeStream.id);
+      });
+      writeStream.on('error', (err) => {
+        reject(err);
+      });
+    });
+  }
+
+  async getPicture(userId: string) {
+    const user = await this.findOne(userId);
+    if (!user) {
+      console.log('Picture not found');
+      throw new NotFoundException('Picture not found');
+    }
+    return this.gridFsBucket.openDownloadStream(user.picture);
+  }
 
   async createUser(createUserDto: CreateUserDto) {
     const user = await this.userModel
@@ -67,7 +108,8 @@ export class UsersService {
         pseudo: user.pseudo,
         email: user.email,
         phone: user.phone,
-        profile_picture: user.profile_picture,
+        picture: user.picture,
+        picture_url: user.picture_url,
         role: user.role,
       },
     };
@@ -79,6 +121,29 @@ export class UsersService {
 
   async findOne(id: string): Promise<User> {
     return this.userModel.findOne({ _id: id }).exec();
+  }
+
+  async updateUser(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    file?: Express.Multer.File,
+  ): Promise<User> {
+    const user = await this.userModel
+      .findByIdAndUpdate(id, updateUserDto, { new: true })
+      .exec();
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (file) {
+      const picture = await this.saveFileToGridFS(file);
+      user.picture = picture;
+      user.picture_url = `http://localhost:3000/users/${user._id}/picture`;
+      return user.save();
+    }
+
+    return user;
   }
 
   async findOneAndBan(id: string): Promise<User> {
