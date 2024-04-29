@@ -8,12 +8,14 @@ import 'dotenv/config';
 import { ConversationsService } from 'src/conversations/conversations.service';
 import { ConversationsController } from 'src/conversations/conversations.controller';
 import { ConversationSchema } from 'src/conversations/entities/conversation.entity';
+import { UserSchema } from 'src/users/entities/user.entity';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: 'Ticket', schema: TicketSchema },
       { name: 'Conversation', schema: ConversationSchema },
+      { name: 'User', schema: UserSchema },
     ]),
     JwtModule.register({
       global: true,

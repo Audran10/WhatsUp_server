@@ -35,20 +35,8 @@ export class TicketsController {
 
   @Delete('accept/:id')
   @UseGuards(AuthGuard)
-  async acceptTicket(
-    @Param('id') ticketId: string,
-    @Body() body: { messageId: string; conversationId: string },
-  ) {
-    const { messageId, conversationId } = body;
-    if (!messageId || !conversationId) {
-      throw new Error('Message ID and Conversation ID are required');
-    }
-
-    return this.ticketsService.deleteTicketAndMessage(
-      ticketId,
-      messageId,
-      conversationId,
-    );
+  async acceptTicket(@Param('id') ticketId: string) {
+    return this.ticketsService.deleteTicketAndMessage(ticketId);
   }
 
   @Delete('cancel/:id')
