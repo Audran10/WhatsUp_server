@@ -12,6 +12,7 @@ import 'dotenv/config';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1w' },
     }),
   ],
   controllers: [UsersController],

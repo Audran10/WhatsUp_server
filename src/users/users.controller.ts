@@ -6,11 +6,18 @@ import {
   Body,
   Param,
   UseGuards,
+  Patch,
+  UseInterceptors,
+  UploadedFile,
+  Res,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto as CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto as LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from 'src/guard.service';
+import { Response } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 export class UsersController {
@@ -36,6 +43,24 @@ export class UsersController {
   @Post('login/')
   login(@Body() loginDto: LoginUserDto) {
     return this.usersService.login(loginDto);
+  }
+
+  @Patch(':id')
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: CreateUserDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.usersService.updateUser(id, updateUserDto, file);
+  }
+
+  @Get(':id/picture')
+  async streamUserPicture(@Res() res: Response, @Req() req) {
+    const stream = await this.usersService.getPicture(req.params.id);
+    res.set('Content-Type', 'image/jpeg');
+    stream.pipe(res);
   }
 
   @Put('ban/:id')

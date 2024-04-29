@@ -18,8 +18,12 @@ export const UserSchema = new Schema({
     type: String,
     required: true,
   },
-  profile_picture: {
-    type: Schema.Types.ObjectId,
+  picture: {
+    type: ObjectId,
+    required: false,
+  },
+  picture_url: {
+    type: String,
     required: false,
   },
   role: {
@@ -33,6 +37,7 @@ export interface User extends Document {
   email: string;
   phone: string;
   password: string;
-  profile_picture: ObjectId;
+  picture?: ObjectId;
+  picture_url?: string;
   role: string;
 }
