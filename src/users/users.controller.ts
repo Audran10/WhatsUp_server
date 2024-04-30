@@ -74,4 +74,10 @@ export class UsersController {
   unbanUser(@Param('id') id: string) {
     return this.usersService.findOneAndUnban(id);
   }
+
+  @Put('admin/:id')
+  @UseGuards(AuthGuard)
+  becomeAdmin(@Param('id') id: string) {
+    return this.usersService.findOneAndBecomeAdmin(id);
+  }
 }
