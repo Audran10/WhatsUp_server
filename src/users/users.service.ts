@@ -13,6 +13,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user-dto';
+import 'dotenv/config';
 
 @Injectable()
 export class UsersService {
@@ -139,7 +140,7 @@ export class UsersService {
     if (file) {
       const picture = await this.saveFileToGridFS(file);
       user.picture = picture;
-      user.picture_url = `http://localhost:3000/users/${user._id}/picture`;
+      user.picture_url = `${process.env.CDN_URL}/users/${user._id}/picture`;
       return user.save();
     }
 

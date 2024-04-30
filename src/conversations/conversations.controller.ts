@@ -81,7 +81,10 @@ export class ConversationsController {
   @Patch(':id/leave')
   @UseGuards(AuthGuard)
   async leaveConversation(@Req() req) {
-    return this.conversationsService.leaveConversation(req.params.id, req.user.id);
+    return this.conversationsService.leaveConversation(
+      req.params.id,
+      req.user.id,
+    );
   }
 
   @Delete(':id')
