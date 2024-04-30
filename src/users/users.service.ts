@@ -173,4 +173,16 @@ export class UsersService {
 
     return user;
   }
+
+  async findOneAndBecomeAdmin(id: string): Promise<User> {
+    const user = await this.userModel
+      .findOneAndUpdate({ _id: id }, { $set: { role: 'admin' } }, { new: true })
+      .exec();
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return user;
+  }
 }
