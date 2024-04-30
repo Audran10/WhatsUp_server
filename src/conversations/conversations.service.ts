@@ -6,6 +6,7 @@ import { Conversation } from './entities/conversation.entity';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { User } from 'src/users/entities/user.entity';
 import { SendMessageDto } from './dto/send-message.dto';
+import 'dotenv/config';
 
 @Injectable()
 export class ConversationsService {
@@ -48,7 +49,7 @@ export class ConversationsService {
     if (file) {
       const picture = await this.saveFileToGridFS(file);
       newConversation.picture = picture;
-      newConversation.picture_url = `http://localhost:3000/conversations/${newConversation._id}/picture`;
+      newConversation.picture_url = `${process.env.CDN_URL}/conversations/${newConversation._id}/picture`;
       return newConversation.save();
     }
     return newConversation;
@@ -108,7 +109,7 @@ export class ConversationsService {
       .findOne({ _id: conversationId })
       .exec();
     conversation.picture = file;
-    conversation.picture_url = `http://localhost:3000/conversations/${conversation._id}/picture`;
+    conversation.picture_url = `${process.env.CDN_URL}/conversations/${conversation._id}/picture`;
     return conversation.save();
   }
 
@@ -130,7 +131,7 @@ export class ConversationsService {
       .findOne({ _id: id })
       .populate({
         path: 'users',
-        select: '-pseudo, -email, -phone, -picture_url',
+        select: '-password -role -picture',
       })
       .exec();
     return conversation;
@@ -164,7 +165,7 @@ export class ConversationsService {
     const conversation = await this.conversationModel
       .findOne({ _id: conversationId })
       .exec();
-    conversation.users = conversation.users.filter((user) => user._id === userId);
+    conversation.users = conversation.users.filter((user) => user._id != userId);
 
     if (conversation.users.length === 1) {
       return this.remove(conversationId);
