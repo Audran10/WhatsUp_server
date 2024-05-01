@@ -49,6 +49,11 @@ export const ConversationSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  owned_by: {
+    type: ObjectId,
+    ref: 'User',
+    required: true,
+  },
 });
 
 export interface Conversation extends Document {
@@ -64,4 +69,5 @@ export interface Conversation extends Document {
   }[];
   created_at: Date;
   updated_at: Date;
+  owned_by: ObjectId;
 }

@@ -7,7 +7,6 @@ import {
 } from '@nestjs/websockets';
 
 import { ConversationsService } from './conversations.service';
-import { UpdateConversationDto } from './dto/update-conversation.dto';
 import { Server, Socket } from 'socket.io';
 
 import { ObjectId } from 'mongodb';
@@ -69,11 +68,6 @@ export class ConversationsGateway {
   @SubscribeMessage('findOneConversation')
   findOne(@MessageBody() id: ObjectId) {
     return this.conversationsService.findOne(id);
-  }
-
-  @SubscribeMessage('updateConversation')
-  update(@MessageBody() updateConversationDto: UpdateConversationDto) {
-    return this.conversationsService.update(updateConversationDto.id);
   }
 
   @SubscribeMessage('removeConversation')
