@@ -215,6 +215,16 @@ export class ConversationsService {
     return false;
   }
 
+  async leaveAllConversations(userId: ObjectId) {
+    const conversations = await this.conversationModel
+      .find({ users: userId })
+      .exec();
+    for (const conversation of conversations) {
+      await this.leaveConversation(conversation._id, userId);
+    }
+    return true;
+  }
+
   async deleteMessageFromConversation(
     conversationId: string,
     messageId: string,

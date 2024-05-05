@@ -11,6 +11,7 @@ import {
   UploadedFile,
   Res,
   Req,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto as CreateUserDto } from './dto/create-user.dto';
@@ -54,6 +55,12 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     return this.usersService.updateUser(id, updateUserDto, file);
+  }
+
+  @Delete('/')
+  @UseGuards(AuthGuard)
+  delete(@Req() req) {
+    return this.usersService.deleteOne(req.user.id);
   }
 
   @Get(':id/picture')
