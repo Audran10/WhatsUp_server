@@ -14,6 +14,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { User } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user-dto';
 import 'dotenv/config';
+import { ConversationsService } from 'src/conversations/conversations.service';
 
 @Injectable()
 export class UsersService {
@@ -22,6 +23,7 @@ export class UsersService {
   constructor(
     @InjectConnection() private readonly connection: Connection,
     @InjectModel('User') private readonly userModel: Model<User>,
+    private conversationsService: ConversationsService,
     private readonly jwtService: JwtService,
   ) {
     this.gridFsBucket = new GridFSBucket(this.connection.db, {
@@ -122,6 +124,17 @@ export class UsersService {
 
   async findOne(id: string): Promise<User> {
     return this.userModel.findOne({ _id: id }).exec();
+  }
+
+  async deleteOne(id: ObjectId): Promise<User> {
+    if (this.conversationsService.leaveAllConversations(id)) {
+      const user = await this.userModel.findOneAndDelete({ _id: id }).exec();
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+      return user;
+    }
+    throw new BadRequestException('Error deleting user');
   }
 
   async updateUser(
