@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { CreateTicketDto } from './dto/create-ticket.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { Model, ObjectId } from 'mongoose';
 import { Ticket } from './entities/ticket.entity';
 import { Conversation } from 'src/conversations/entities/conversation.entity';
 import { User } from 'src/users/entities/user.entity';
+
 @Injectable()
 export class TicketsService {
   constructor(
@@ -26,30 +26,35 @@ export class TicketsService {
     return conversation;
   }
 
-  async create(createTicketDto: CreateTicketDto): Promise<Ticket> {
-    const user = await this.UserModel.findOne({
-      _id: createTicketDto.reporter,
-    }).exec();
-
-    if (!user) {
-      throw new Error(`User with ID ${createTicketDto.reporter} not found`);
-    }
-
-    const conversation = await this.findConversationFromMessageId(
-      createTicketDto.message_id,
-    );
+  async create(userId: ObjectId, messageId: ObjectId): Promise<Ticket> {
+    const conversation = await this.ConversationModel.findOne({
+      'messages._id': messageId,
+    })
+      .populate({ path: 'users', select: '-role -password -phone -email -__v' })
+      .exec();
 
     if (!conversation) {
-      throw new Error(
-        `Conversation not found for message ID ${createTicketDto.message_id}`,
-      );
+      throw new Error(`Conversation not found for message ID ${messageId}`);
     }
 
-    createTicketDto.reporter = user.pseudo;
-    createTicketDto.conversation_id = conversation._id;
+    const message = conversation.messages.find(
+      (message) => message._id.toString() === messageId.toString(),
+    );
 
-    const ticket = await this.TicketModel.create(createTicketDto);
-    return ticket;
+    if (!message) {
+      throw new Error(`Message not found for ID ${messageId}`);
+    }
+
+    return new this.TicketModel({
+      reporter: userId,
+      content: message.content,
+      message_id: messageId,
+      conversation_id: conversation._id,
+      sender_username: conversation.users.find(
+        (user) => user._id.toString() === message.sender_id.toString(),
+      )?.pseudo,
+      sender_id: message.sender_id,
+    }).save();
   }
 
   async findAll(): Promise<Ticket[]> {

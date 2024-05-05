@@ -19,7 +19,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { SendMessageDto } from './dto/send-message.dto';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
-import { get } from 'http';
 
 @Controller('conversations')
 export class ConversationsController {

@@ -6,10 +6,11 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
-import { CreateTicketDto } from './dto/create-ticket.dto';
 import { AuthGuard } from 'src/guard.service';
+import { ObjectId } from 'mongoose';
 
 @Controller('tickets')
 export class TicketsController {
@@ -17,8 +18,8 @@ export class TicketsController {
 
   @Post()
   @UseGuards(AuthGuard)
-  create(@Body() createTicketDto: CreateTicketDto) {
-    return this.ticketsService.create(createTicketDto);
+  async create(@Req() req, @Body() message: { message_id: ObjectId }) {
+    return this.ticketsService.create(req.user.id, message.message_id);
   }
 
   @Get('/')
