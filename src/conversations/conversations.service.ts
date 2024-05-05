@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
 import { ObjectId, GridFSBucket, GridFSBucketWriteStream } from 'mongodb';
@@ -7,6 +12,7 @@ import { CreateConversationDto } from './dto/create-conversation.dto';
 import { User } from 'src/users/entities/user.entity';
 import { SendMessageDto } from './dto/send-message.dto';
 import 'dotenv/config';
+import { UpdateConversationDto } from './dto/update-conversation.dto';
 
 @Injectable()
 export class ConversationsService {
@@ -41,7 +47,8 @@ export class ConversationsService {
     const conversation = {
       name: createConversationDto.name,
       users: users.map((user) => user._id),
-    } as { name: string; users: ObjectId[] };
+      owned_by: user._id,
+    } as { name: string; users: ObjectId[]; owned_by: ObjectId };
 
     const newConversation = await new this.conversationModel(
       conversation,
@@ -99,18 +106,45 @@ export class ConversationsService {
     });
   }
 
-  async modifyPicture(
+  async modify(
+    userId: ObjectId,
     conversationId: ObjectId,
-    fileMulter: Express.Multer.File,
+    updateConversation: UpdateConversationDto,
+    fileMulter?: Express.Multer.File,
   ) {
-    const file = await this.saveFileToGridFS(fileMulter);
+    const conversation = await this.findOne(conversationId);
 
-    const conversation = await this.conversationModel
-      .findOne({ _id: conversationId })
-      .exec();
-    conversation.picture = file;
-    conversation.picture_url = `${process.env.CDN_URL}/conversations/${conversation._id}/picture`;
-    return conversation.save();
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+
+    if (updateConversation.name) {
+      conversation.name = updateConversation.name;
+    }
+
+    if (
+      updateConversation.users &&
+      updateConversation.users !== conversation.users.map((user) => user.phone)
+    ) {
+      const users = (await this.connection
+        .model('User')
+        .find({ phone: updateConversation.users })
+        .exec()) as unknown as User[];
+      conversation.users = users.map((user) => user._id);
+    }
+
+    if (fileMulter) {
+      const picture = await this.saveFileToGridFS(fileMulter);
+      conversation.picture = picture;
+      conversation.picture_url = `${process.env.CDN_URL}/conversations/${conversation._id}/picture`;
+    }
+    if (await conversation.save()) {
+      return await conversation.populate({
+        path: 'users',
+        select: '-password -role -picture',
+      });
+    }
+    throw new BadRequestException('Error updating conversation');
   }
 
   async getPicture(conversationId: ObjectId) {
@@ -123,7 +157,7 @@ export class ConversationsService {
   }
 
   findAll() {
-    return `This action returns all conversations`;
+    return this.conversationModel.find().populate('users').exec();
   }
 
   async findOne(id: ObjectId) {
@@ -137,13 +171,12 @@ export class ConversationsService {
     return conversation;
   }
 
-  update(id: number) {
-    return `This action updates a #${id} conversation`;
-  }
-
   remove(id: ObjectId) {
-    console.log('Removing conversation', id);
-    return this.conversationModel.deleteOne({ _id: id }).exec();
+    const removed = this.conversationModel.deleteOne({ _id: id }).exec();
+    if (!removed) {
+      throw new NotFoundException('Conversation not found');
+    }
+    return true;
   }
 
   async sendMessage(data: SendMessageDto) {
@@ -164,16 +197,25 @@ export class ConversationsService {
   async leaveConversation(conversationId: ObjectId, userId: ObjectId) {
     const conversation = await this.conversationModel
       .findOne({ _id: conversationId })
+      .populate({
+        path: 'users',
+        select: '-password -role -picture',
+      })
       .exec();
-    conversation.users = conversation.users.filter((user) => user._id != userId);
+    conversation.users = conversation.users.filter(
+      (user) => user._id != userId,
+    );
 
     if (conversation.users.length === 1) {
       return this.remove(conversationId);
     }
 
-    return conversation.save();
+    if (conversation.save()) {
+      return true;
+    }
+    return false;
   }
-  
+
   async deleteMessageFromConversation(
     conversationId: string,
     messageId: string,

@@ -18,6 +18,8 @@ import { AuthGuard } from 'src/guard.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { SendMessageDto } from './dto/send-message.dto';
+import { UpdateConversationDto } from './dto/update-conversation.dto';
+import { get } from 'http';
 
 @Controller('conversations')
 export class ConversationsController {
@@ -47,11 +49,26 @@ export class ConversationsController {
     return conversations;
   }
 
-  @Post(':id/modifypicture')
+  @Patch(':id/modify')
   @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  modifyPicture(@UploadedFile() file: Express.Multer.File, @Req() req) {
-    return this.conversationsService.modifyPicture(req.params.id, file);
+  modifyPicture(
+    @Body() updateConversation: UpdateConversationDto,
+    @Req() req,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.conversationsService.modify(
+      req.user.id,
+      req.params.id,
+      updateConversation,
+      file,
+    );
+  }
+
+  @Get('/findAll')
+  @UseGuards(AuthGuard)
+  async findAll() {
+    return this.conversationsService.findAll();
   }
 
   @Get(':id/picture')
