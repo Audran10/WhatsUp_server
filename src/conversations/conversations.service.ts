@@ -88,7 +88,7 @@ export class ConversationsService {
       .find({ users: userId })
       .populate({
         path: 'users',
-        select: '-pseudo, -email, -phone, -picture_url',
+        select: '-picture -__v -role -password',
       })
       .exec();
 
@@ -156,7 +156,10 @@ export class ConversationsService {
   }
 
   findAll() {
-    return this.conversationModel.find().populate('users').exec();
+    return this.conversationModel
+      .find()
+      .populate({ path: 'users', select: '-role -__v -password -picture' })
+      .exec();
   }
 
   async findOne(id: ObjectId) {
@@ -164,7 +167,7 @@ export class ConversationsService {
       .findOne({ _id: id })
       .populate({
         path: 'users',
-        select: '-password -role -picture',
+        select: '-password -role',
       })
       .exec();
     return conversation;
@@ -181,7 +184,7 @@ export class ConversationsService {
   async sendMessage(data: SendMessageDto) {
     const conversation = await this.conversationModel
       .findOne({ _id: data.conversation_id })
-      .populate('users')
+      .populate({ path: 'users', select: '-role -__v -password -picture' })
       .exec();
     conversation.updated_at = new Date();
     conversation.messages.push({

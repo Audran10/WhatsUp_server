@@ -65,6 +65,7 @@ export class UsersService {
   async createUser(createUserDto: CreateUserDto) {
     const user = await this.userModel
       .findOne({ phone: createUserDto.phone })
+      .select('-password')
       .exec();
     if (user) {
       throw new BadRequestException('User already exists');
@@ -82,7 +83,6 @@ export class UsersService {
         access_token: await this.jwtService.signAsync(payload),
         user: {
           ...newUser.toJSON(),
-          password: undefined,
         },
       };
     }
@@ -119,11 +119,11 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+    return this.userModel.find().select('-password').exec();
   }
 
   async findOne(id: string): Promise<User> {
-    return this.userModel.findOne({ _id: id }).exec();
+    return this.userModel.findOne({ _id: id }).select('-password').exec();
   }
 
   async deleteOne(id: ObjectId): Promise<User> {
@@ -144,6 +144,7 @@ export class UsersService {
   ): Promise<User> {
     const user = await this.userModel
       .findByIdAndUpdate(id, updateUserDto, { new: true })
+      .select('-password')
       .exec();
 
     if (!user) {
@@ -167,6 +168,7 @@ export class UsersService {
         { $set: { role: 'banned' } },
         { new: true },
       )
+      .select('-password -picture -picture_url -__v')
       .exec();
 
     if (!user) {
@@ -179,6 +181,7 @@ export class UsersService {
   async findOneAndUnban(id: string): Promise<User> {
     const user = await this.userModel
       .findOneAndUpdate({ _id: id }, { $set: { role: 'user' } }, { new: true })
+      .select('-password -picture -picture_url -__v')
       .exec();
 
     if (!user) {
@@ -191,6 +194,7 @@ export class UsersService {
   async findOneAndBecomeAdmin(id: string): Promise<User> {
     const user = await this.userModel
       .findOneAndUpdate({ _id: id }, { $set: { role: 'admin' } }, { new: true })
+      .select('-password -picture -picture_url -__v')
       .exec();
 
     if (!user) {
