@@ -37,6 +37,8 @@ export class TicketsService {
       throw new Error(`Conversation not found for message ID ${messageId}`);
     }
 
+    const user = await this.UserModel.findOne({ _id: userId }).exec();
+
     const message = conversation.messages.find(
       (message) => message._id.toString() === messageId.toString(),
     );
@@ -46,7 +48,7 @@ export class TicketsService {
     }
 
     return new this.TicketModel({
-      reporter: userId,
+      reporter: user.pseudo,
       content: message.content,
       message_id: messageId,
       conversation_id: conversation._id,

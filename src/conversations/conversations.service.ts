@@ -209,6 +209,10 @@ export class ConversationsService {
       return this.remove(conversationId);
     }
 
+    if (conversation.owned_by == userId) {
+      conversation.owned_by = conversation.users[0]._id;
+    }
+
     if (conversation.save()) {
       return true;
     }
