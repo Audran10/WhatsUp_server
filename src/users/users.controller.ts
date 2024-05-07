@@ -87,4 +87,10 @@ export class UsersController {
   becomeAdmin(@Param('id') id: string) {
     return this.usersService.findOneAndBecomeAdmin(id);
   }
+
+  @Post('token/')
+  @UseGuards(AuthGuard)
+  addDeviceToken(@Req() req, @Body() body: { token: string }) {
+    return this.usersService.addDeviceToken(req.user.id, body.token);
+  }
 }

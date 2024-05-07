@@ -51,6 +51,6 @@ pids
 *.pid
 *.seed
 *.pid.lock
-
+AuthKey_P43VR4D7W3.p8
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json

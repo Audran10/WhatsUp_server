@@ -30,6 +30,10 @@ export const UserSchema = new Schema({
     type: String,
     default: 'user',
   },
+  devide_token: {
+    type: String,
+    required: false,
+  },
 });
 
 export interface User extends Document {
@@ -40,4 +44,5 @@ export interface User extends Document {
   picture?: ObjectId;
   picture_url?: string;
   role: string;
+  devide_token?: string;
 }
