@@ -199,4 +199,19 @@ export class UsersService {
 
     return user;
   }
+
+  async addDeviceToken(userId: string, deviceToken: string) {
+    const user = await this.userModel
+      .findOne({ _id: userId })
+      .select('-password')
+      .exec();
+
+    user.devide_token = deviceToken;
+    await user.save();
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return user;
+  }
 }

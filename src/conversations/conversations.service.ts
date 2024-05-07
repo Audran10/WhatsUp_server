@@ -12,10 +12,12 @@ import { User } from 'src/users/entities/user.entity';
 import { SendMessageDto } from './dto/send-message.dto';
 import 'dotenv/config';
 import { UpdateConversationDto } from './dto/update-conversation.dto';
+import { ApnsService } from 'src/Apns/apns.service';
 
 @Injectable()
 export class ConversationsService {
   private gridFsBucket: GridFSBucket;
+  private apnsService: ApnsService;
 
   constructor(
     @InjectConnection() private readonly connection: Connection,
@@ -24,6 +26,7 @@ export class ConversationsService {
     this.gridFsBucket = new GridFSBucket(this.connection.db, {
       bucketName: 'Music',
     });
+    this.apnsService = new ApnsService();
   }
 
   async createConversation(
@@ -183,6 +186,23 @@ export class ConversationsService {
       .findOne({ _id: data.conversation_id })
       .populate('users')
       .exec();
+    if (!conversation) {
+      throw new NotFoundException('Conversation not found');
+    }
+    const usersDeviceToken = conversation.users.flatMap((user) => {
+      if (user._id != data.sender_id && user.devide_token) {
+        return user.devide_token;
+      }
+    });
+    const username = conversation.users.find(
+      (user) => user._id == data.sender_id,
+    )?.pseudo;
+    this.apnsService.sendPushNotification(
+      usersDeviceToken,
+      conversation.name,
+      username,
+      data.content,
+    );
     conversation.updated_at = new Date();
     conversation.messages.push({
       _id: new ObjectId(),
